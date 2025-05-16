@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis MLOps Pipeline - Kubeflow to Vertex AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #1a73e8;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .card-content {
+            padding: 20px;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        .feature {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1a73e8;
+        }
+        .cta {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1a73e8;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0d47a1;
+        }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+        .architecture {
+            margin: 40px 0;
+            text-align: center;
+        }
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sentiment Analysis MLOps Pipeline</h1>
+        <p>A complete MLOps workflow with migration path from Kubeflow to Vertex AI</p>
+    </header>
+
+    <div class="architecture">
+        <h2>Pipeline Architecture</h2>
+        <img src="pipeline_visualization.png" alt="Pipeline Visualization" width="800">
+    </div>
+
+    <div class="feature-list">
+        <div class="feature">
+            <h3>🔄 Complete ML Pipeline</h3>
+            <p>End-to-end workflow from data preparation to model deployment with reusable components</p>
+        </div>
+        <div class="feature">
+            <h3>☁️ Cloud Integration</h3>
+            <p>Designed for both Kubeflow Pipelines and Google Cloud Vertex AI deployment</p>
+        </div>
+        <div class="feature">
+            <h3>🛡️ Responsible AI</h3>
+            <p>Model explanations, bias detection, and drift monitoring built-in</p>
+        </div>
+        <div class="feature">
+            <h3>📊 Comprehensive Monitoring</h3>
+            <p>Integrated monitoring and observability for model performance and health</p>
+        </div>
+    </div>
+
+    <h2>Pipeline Components</h2>
+    <div class="container">
+        <div class="card">
+            <img src="evaluation_metrics.png" alt="Evaluation Metrics">
+            <div class="card-content">
+                <h3>Model Evaluation</h3>
+                <p>Comprehensive model evaluation metrics to ensure high-quality predictions and monitor model health over time.</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="monitoring_dashboard.png" alt="Monitoring Dashboard">
+            <div class="card-content">
+                <h3>Monitoring Dashboard</h3>
+                <p>Real-time tracking of model performance, prediction distribution, and system health metrics.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <img src="positive_explanation.png" alt="Model Explanations">
+            <div class="card-content">
+                <h3>Model Explanations</h3>
+                <p>Transparent AI with visualization of factors influencing model predictions.</p>
+            </div>
+        </div>
+    </div>
+
+    <h2>Kubeflow to Vertex AI Migration</h2>
+    <p>This project demonstrates how to structure components for seamless migration from Kubeflow Pipelines to Vertex AI:</p>
+    
+    <pre>
+Kubeflow Pipeline                  Vertex AI Pipeline
+┌─────────────────┐               ┌─────────────────┐
+│ @dsl.component  │               │ @component      │
+│ Local artifacts │ ────────────▶ │ GCS artifacts   │
+│ YAML format     │               │ JSON format     │
+└─────────────────┘               └─────────────────┘
+    </pre>
+
+    <div class="cta">
+        <a href="https://github.com/kiriti-v/mlops-demo" class="button">View on GitHub</a>
+        <a href="kubeflow_to_vertex.html" class="button">Migration Guide</a>
+    </div>
+
+    <footer>
+        <p>Sentiment Analysis MLOps Pipeline Demo - Showcasing integration between Kubeflow Pipelines and Vertex AI</p>
+    </footer>
+</body>
+</html> 

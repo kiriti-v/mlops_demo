@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Guide: Kubeflow Pipelines to Vertex AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #1a73e8;
+        }
+        h2 {
+            color: #1a73e8;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        code {
+            background-color: #f6f8fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            margin-bottom: 10px;
+            padding-left: 30px;
+            position: relative;
+        }
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #1a73e8;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 10px 15px;
+            background-color: #1a73e8;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background-color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Migration Guide: Kubeflow Pipelines to Vertex AI</h1>
+        <p>A detailed guide for migrating ML pipelines from Kubeflow to Google Cloud's Vertex AI</p>
+    </header>
+
+    <h2>Architecture Comparison</h2>
+    <table>
+        <tr>
+            <th>Kubeflow Pipelines</th>
+            <th>Vertex AI Pipelines</th>
+        </tr>
+        <tr>
+            <td>Self-managed infrastructure</td>
+            <td>Fully managed by Google Cloud</td>
+        </tr>
+        <tr>
+            <td>Manual scaling</td>
+            <td>Auto-scaling infrastructure</td>
+        </tr>
+        <tr>
+            <td>Custom auth integration</td>
+            <td>Integrated with IAM</td>
+        </tr>
+        <tr>
+            <td>Open-source</td>
+            <td>Commercial offering with SLAs</td>
+        </tr>
+    </table>
+
+    <h2>Component Migration Map</h2>
+    
+    <h3>Pipeline Definition</h3>
+    
+    <h4>Kubeflow:</h4>
+    <pre><code>@dsl.pipeline(
+    name="sentiment-analysis-pipeline",
+    description="A pipeline that analyzes sentiment in text data"
+)
+def sentiment_analysis_pipeline(data_path: str):
+    data_prep_op = data_prep_component(data_path=data_path)
+    train_op = train_component(train_path=data_prep_op.outputs['train_path'])
+    # ...</code></pre>
+    
+    <h4>Vertex AI:</h4>
+    <pre><code>@pipeline(
+    name="sentiment-analysis-pipeline",
+    pipeline_root=PIPELINE_ROOT
+)
+def sentiment_analysis_pipeline(data_path: str):
+    data_prep_op = data_prep_component(data_path=data_path)
+    train_op = train_component(train_path=data_prep_op.outputs['train_path'])
+    # ...</code></pre>
+    
+    <h3>Component Definitions</h3>
+    
+    <h4>Kubeflow:</h4>
+    <pre><code>@kfp.dsl.component
+def prepare_data(data_path: str, test_size: float) -> dict:
+    # Implementation</code></pre>
+    
+    <h4>Vertex AI:</h4>
+    <pre><code>@component(
+    base_image="python:3.9",
+    packages_to_install=["pandas", "scikit-learn"]
+)
+def prepare_data(data_path: str, test_size: float) -> dict:
+    # Implementation</code></pre>
+    
+    <h2>Artifact Management</h2>
+    <table>
+        <tr>
+            <th>Kubeflow</th>
+            <th>Vertex AI</th>
+        </tr>
+        <tr>
+            <td><code>InputPath</code>/<code>OutputPath</code></td>
+            <td>Google Cloud Storage paths</td>
+        </tr>
+        <tr>
+            <td>Local storage</td>
+            <td>Cloud Storage</td>
+        </tr>
+        <tr>
+            <td>Custom metadata store</td>
+            <td>Vertex ML Metadata</td>
+        </tr>
+    </table>
+    
+    <h2>Compilation Process</h2>
+    
+    <h4>Kubeflow:</h4>
+    <pre><code>kfp.compiler.Compiler().compile(
+    pipeline_func=sentiment_analysis_pipeline,
+    package_path="pipeline.yaml"
+)</code></pre>
+    
+    <h4>Vertex AI:</h4>
+    <pre><code>from google.cloud import aiplatform
+from google.cloud.aiplatform import pipeline_jobs
+
+compiler.Compiler().compile(
+    pipeline_func=sentiment_analysis_pipeline,
+    package_path="pipeline.json"
+)
+
+pipeline_job = pipeline_jobs.PipelineJob(
+    display_name="sentiment-analysis",
+    template_path="pipeline.json",
+    pipeline_root=PIPELINE_ROOT,
+    parameter_values={"data_path": "gs://my-bucket/data.csv"}
+)
+pipeline_job.submit()</code></pre>
+    
+    <h2>Benefits of Migration</h2>
+    <ol>
+        <li><strong>Scalability</strong>: Native integration with Google Cloud's infrastructure</li>
+        <li><strong>Reliability</strong>: Enterprise-grade SLAs and managed components</li>
+        <li><strong>Security</strong>: Integrated with IAM and Google Cloud security controls</li>
+        <li><strong>Ecosystem</strong>: Seamless integration with other Google Cloud services</li>
+        <li><strong>Managed Infrastructure</strong>: Reduced operational overhead</li>
+    </ol>
+    
+    <h2>Migration Checklist</h2>
+    <ul class="checklist">
+        <li>Update component definitions to use Vertex AI format</li>
+        <li>Change artifact storage to Google Cloud Storage</li>
+        <li>Update pipeline compiler imports</li>
+        <li>Configure pipeline_root to use GCS bucket</li>
+        <li>Update component container images (if needed)</li>
+        <li>Set up Google Cloud service accounts and permissions</li>
+        <li>Configure monitoring and logging</li>
+    </ul>
+    
+    <h2>Monitoring and Observability</h2>
+    <table>
+        <tr>
+            <th>Kubeflow</th>
+            <th>Vertex AI</th>
+        </tr>
+        <tr>
+            <td>Custom Prometheus/Grafana</td>
+            <td>Cloud Monitoring integration</td>
+        </tr>
+        <tr>
+            <td>Manual log aggregation</td>
+            <td>Cloud Logging</td>
+        </tr>
+        <tr>
+            <td>Custom alerting</td>
+            <td>Cloud Monitoring alerts</td>
+        </tr>
+    </table>
+    
+    <p>Our project demonstrates this migration path with components designed to work in both environments.</p>
+    
+    <a href="index.html" class="back-link">Back to Demo</a>
+</body>
+</html> 
