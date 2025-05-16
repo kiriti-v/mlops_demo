@@ -8,17 +8,19 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . .
+# Create model directory
+RUN mkdir -p model/saved_model
+
+# Copy the model download script and the application
+COPY download_model.py model/
+COPY app.py .
 
 # Download the model
-RUN mkdir -p ../1-model/saved_model
-COPY ../1-model/download_model.py ../1-model/
-RUN cd ../1-model && python download_model.py
+RUN cd model && python download_model.py
 
 # Set environment variables
 ENV PORT=8080
-ENV MODEL_PATH=/app/1-model/saved_model
+ENV MODEL_PATH=/app/model/saved_model
 
 # Expose the port
 EXPOSE 8080

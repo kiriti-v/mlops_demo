@@ -18,7 +18,7 @@ client = google.cloud.logging.Client()
 client.setup_logging()
 
 # Load model and tokenizer
-MODEL_PATH = os.getenv('MODEL_PATH', '../1-model/saved_model')
+MODEL_PATH = os.getenv('MODEL_PATH', 'model/saved_model')
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
 model.eval()
