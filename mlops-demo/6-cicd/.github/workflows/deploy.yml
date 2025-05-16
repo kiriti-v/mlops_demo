@@ -1,0 +1,64 @@
+name: Deploy Sentiment Analysis Service
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r mlops-demo/1-model/requirements.txt
+        pip install -r mlops-demo/2-cloud-run-deployment/requirements.txt
+        pip install -r mlops-demo/6-cicd/requirements.txt
+        
+    - name: Run model tests
+      run: |
+        cd mlops-demo/6-cicd
+        python test_model.py
+        
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+        
+    - name: Build Docker container
+      run: |
+        cd mlops-demo/2-cloud-run-deployment
+        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/sentiment-analysis-api:${{ github.sha }}
+        
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy sentiment-analysis-api \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sentiment-analysis-api:${{ github.sha }} \
+          --platform managed \
+          --region us-central1 \
+          --allow-unauthenticated
+          
+    - name: Wait for deployment to stabilize
+      run: sleep 60
+      
+    - name: Run API tests
+      env:
+        API_URL: ${{ steps.deploy.outputs.url }}
+      run: |
+        cd mlops-demo/6-cicd
+        python test_api.py
+        
+    - name: Notify on success
+      if: success()
+      run: echo "Deployment successful!" 
