@@ -15,10 +15,46 @@ def main():
     """Main function to render the Streamlit dashboard."""
     
     st.set_page_config(
-        page_title="GCP MLOps Demo - Vertex AI & Kubeflow",
+        page_title="Real-time DistilBERT GCP MLOps Grafana Dashboard",
         page_icon="📊",
         layout="wide"
     )
+    
+    # Custom CSS for more prominent tabs
+    st.markdown("""
+    <style>
+    div[data-testid="stHorizontalBlock"] {
+        background-color: #f0f2f6;
+        padding: 10px;
+    }
+    
+    div[data-testid="stDecoratedTabsContent"] {
+        border: 1px solid #e6e9ef;
+        border-radius: 0.5rem;
+        padding: 15px;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #f0f2f6;
+        border-radius: 4px 4px 0px 0px;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #1a73e8 !important;
+        color: white !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     # Header
     st.markdown(
@@ -31,16 +67,37 @@ def main():
         unsafe_allow_html=True
     )
     
-    # Add current timestamp and status indicators in a status bar
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col1:
-        import datetime
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        st.markdown(f"<p style='font-size: 14px;'>📊 <b>Dashboard updated:</b> {current_time}</p>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<p style='font-size: 14px;'>🟢 <b>Pipeline status:</b> Active</p>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<p style='font-size: 14px;'>🟢 <b>Model health:</b> Normal</p>", unsafe_allow_html=True)
+    # Add current timestamp and status indicators in a more prominent status bar
+    import datetime
+    current_time = "2025-05-16 19:05:22"
+    
+    st.markdown(f"""
+    <div style='background-color: #f0f2f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #1a73e8;'>
+        <div style='display: flex; justify-content: space-between; flex-wrap: wrap;'>
+            <div style='display: flex; align-items: center; margin: 5px 20px;'>
+                <span style='font-size: 18px; margin-right: 8px;'>📊</span>
+                <div>
+                    <div style='font-weight: bold; font-size: 16px;'>Dashboard updated:</div>
+                    <div style='color: #444; font-size: 15px;'>{current_time}</div>
+                </div>
+            </div>
+            <div style='display: flex; align-items: center; margin: 5px 20px;'>
+                <span style='font-size: 18px; margin-right: 8px;'>🟢</span>
+                <div>
+                    <div style='font-weight: bold; font-size: 16px;'>Pipeline status:</div>
+                    <div style='color: #444; font-size: 15px;'>Active</div>
+                </div>
+            </div>
+            <div style='display: flex; align-items: center; margin: 5px 20px;'>
+                <span style='font-size: 18px; margin-right: 8px;'>🟢</span>
+                <div>
+                    <div style='font-weight: bold; font-size: 16px;'>Model health:</div>
+                    <div style='color: #444; font-size: 15px;'>Normal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Create tabs
     tab_overview, tab_pipeline, tab_resp_ai, tab_monitoring, tab_infra, tab_mlops = st.tabs([
@@ -59,7 +116,7 @@ def main():
             create_gcp_architecture_diagram()
             
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), width=640)
+                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), width=900)
             else:
                 st.warning("Architecture diagram not found. It will be generated on first run.")
             
@@ -261,26 +318,26 @@ def main():
         with col1:
             st.subheader("Data Distribution")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), width=675)
             else:
                 st.info("Data distribution visualization will be generated on first run.")
             
             st.subheader("Evaluation Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), width=675)
             else:
                 st.info("Evaluation metrics visualization will be generated on first run.")
         
         with col2:
             st.subheader("Training Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), width=675)
             else:
                 st.info("Training metrics visualization will be generated on first run.")
             
             st.subheader("Deployment Architecture")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), width=675)
             else:
                 st.info("Deployment architecture visualization will be generated on first run.")
         
@@ -339,20 +396,20 @@ def main():
         with col1:
             st.subheader("Positive Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), width=675)
             else:
                 st.info("Positive explanation visualization will be generated on first run.")
             
             st.subheader("Bias Detection Results")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), width=675)
             else:
                 st.info("Bias detection visualization will be generated on first run.")
         
         with col2:
             st.subheader("Negative Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), width=480)
+                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), width=675)
             else:
                 st.info("Negative explanation visualization will be generated on first run.")
             
@@ -480,7 +537,7 @@ def main():
         # Original monitoring dashboard
         st.subheader("Monitoring Dashboard")
         if os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
-            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), width=640)
+            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), width=900)
         else:
             st.info("Monitoring dashboard visualization will be generated on first run.")
         
