@@ -24,7 +24,7 @@ def main():
     st.markdown(
         """
         <div style='background-color: #1a73e8; padding: 20px; border-radius: 10px; margin-bottom: 30px;'>
-            <h1 style='color: white; text-align: center;'>Sentiment Analysis MLOps Demo</h1>
+            <h1 style='color: white; text-align: center;'>Sentiment Analysis MLOps Grafana Dashboard</h1>
             <p style='color: white; text-align: center; font-size: 20px;'>Leveraging Google Cloud Platform, Vertex AI, and Kubeflow Pipelines</p>
         </div>
         """, 
@@ -539,81 +539,166 @@ def create_gcp_architecture_diagram():
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
     
     # Create a figure for the architecture diagram
-    plt.figure(figsize=(10, 6))
-    plt.tight_layout()
+    fig, ax = plt.subplots(figsize=(7, 4))
     
     # Set the background color
-    ax = plt.gca()
     ax.set_facecolor('#f8f9fa')
     
-    # Define the components
+    # Define component dimensions
+    box_width = 0.15
+    box_height = 0.25
+    
+    # Define the components with precise positions
     components = [
-        {'name': 'Cloud Storage', 'x': 0.1, 'y': 0.5, 'color': '#4285F4'},
-        {'name': 'Vertex AI Pipelines', 'x': 0.3, 'y': 0.5, 'color': '#0F9D58'},
-        {'name': 'Vertex AI Training', 'x': 0.5, 'y': 0.7, 'color': '#0F9D58'},
-        {'name': 'Vertex AI Model Registry', 'x': 0.5, 'y': 0.3, 'color': '#0F9D58'},
-        {'name': 'Vertex AI Endpoints', 'x': 0.7, 'y': 0.5, 'color': '#0F9D58'},
-        {'name': 'Cloud Run', 'x': 0.9, 'y': 0.5, 'color': '#4285F4'},
-        {'name': 'Cloud Monitoring', 'x': 0.5, 'y': 0.1, 'color': '#F4B400'},
-        {'name': 'Artifact Registry', 'x': 0.3, 'y': 0.3, 'color': '#4285F4'},
-        {'name': 'IAM', 'x': 0.3, 'y': 0.7, 'color': '#DB4437'},
-        {'name': 'GitHub Actions CI/CD', 'x': 0.7, 'y': 0.8, 'color': '#333333'},
+        {'name': 'Cloud Storage', 'x': 0.1, 'y': 0.5, 'color': '#4285F4', 'width': box_width, 'height': box_height},
+        {'name': 'Vertex AI\nPipelines', 'x': 0.3, 'y': 0.5, 'color': '#0F9D58', 'width': box_width, 'height': box_height},
+        {'name': 'Vertex AI\nTraining', 'x': 0.5, 'y': 0.7, 'color': '#0F9D58', 'width': box_width, 'height': box_height},
+        {'name': 'Vertex AI\nModel Registry', 'x': 0.5, 'y': 0.3, 'color': '#0F9D58', 'width': box_width, 'height': box_height},
+        {'name': 'Vertex AI\nEndpoints', 'x': 0.7, 'y': 0.5, 'color': '#0F9D58', 'width': box_width, 'height': box_height},
+        {'name': 'Cloud Run', 'x': 0.9, 'y': 0.5, 'color': '#4285F4', 'width': box_width, 'height': box_height},
+        {'name': 'Cloud\nMonitoring', 'x': 0.5, 'y': 0.1, 'color': '#F4B400', 'width': box_width, 'height': box_height},
+        {'name': 'Artifact\nRegistry', 'x': 0.3, 'y': 0.3, 'color': '#4285F4', 'width': box_width, 'height': box_height},
+        {'name': 'IAM', 'x': 0.3, 'y': 0.7, 'color': '#DB4437', 'width': box_width, 'height': box_height},
+        {'name': 'GitHub Actions\nCI/CD', 'x': 0.7, 'y': 0.8, 'color': '#333333', 'width': box_width, 'height': box_height},
     ]
     
-    # Draw boxes for components
+    # Draw components as rectangles with text
     for component in components:
-        plt.annotate(component['name'], 
-                     xy=(component['x'], component['y']), 
-                     xytext=(component['x'], component['y']),
-                     ha='center',
-                     size=12,
-                     bbox=dict(boxstyle='round,pad=0.5', 
-                               fc=component['color'], 
-                               ec='black',
-                               alpha=0.7,
-                               color='white'))
+        # Create rectangle patch
+        rect = plt.Rectangle(
+            (component['x'] - component['width']/2, component['y'] - component['height']/2),
+            component['width'], component['height'],
+            facecolor=component['color'],
+            edgecolor='black',
+            alpha=0.7,
+            zorder=1
+        )
+        ax.add_patch(rect)
+        
+        # Add text
+        ax.text(
+            component['x'], component['y'],
+            component['name'],
+            ha='center',
+            va='center',
+            color='white',
+            fontsize=8,
+            zorder=2
+        )
     
-    # Add arrows for data flow - fixed positioning and directions
-    # Storage to Pipelines
-    plt.annotate('', xy=(0.27, 0.5), xytext=(0.13, 0.5), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=0"))
+    # Helper function to calculate connection points between components
+    def get_connection_points(start_idx, end_idx):
+        start_comp = components[start_idx]
+        end_comp = components[end_idx]
+        
+        # Determine connection sides based on relative positions
+        if abs(start_comp['x'] - end_comp['x']) > abs(start_comp['y'] - end_comp['y']):
+            # Horizontal connection
+            if start_comp['x'] < end_comp['x']:  # start is to the left of end
+                start_x = start_comp['x'] + start_comp['width']/2
+                end_x = end_comp['x'] - end_comp['width']/2
+            else:  # start is to the right of end
+                start_x = start_comp['x'] - start_comp['width']/2
+                end_x = end_comp['x'] + end_comp['width']/2
+            
+            start_y = start_comp['y']
+            end_y = end_comp['y']
+        else:
+            # Vertical connection
+            if start_comp['y'] < end_comp['y']:  # start is below end
+                start_y = start_comp['y'] + start_comp['height']/2
+                end_y = end_comp['y'] - end_comp['height']/2
+            else:  # start is above end
+                start_y = start_comp['y'] - start_comp['height']/2
+                end_y = end_comp['y'] + end_comp['height']/2
+            
+            start_x = start_comp['x']
+            end_x = end_comp['x']
+            
+        return start_x, start_y, end_x, end_y
     
-    # Pipelines to Training
-    plt.annotate('', xy=(0.48, 0.67), xytext=(0.32, 0.52), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=0.1"))
+    # Define connections
+    connections = [
+        (0, 1),  # Storage to Pipelines
+        (1, 2),  # Pipelines to Training
+        (1, 3),  # Pipelines to Model Registry
+        (2, 3),  # Training to Model Registry
+        (3, 4),  # Model Registry to Endpoints
+        (4, 5),  # Endpoints to Cloud Run
+        (1, 7),  # Pipelines to Artifact Registry
+        (1, 8),  # Pipelines to IAM
+        (9, 2),  # GitHub Actions to Training
+    ]
     
-    # Pipelines to Model Registry
-    plt.annotate('', xy=(0.48, 0.33), xytext=(0.32, 0.48), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=-0.1"))
+    # Draw arrows for data flow with precise connections
+    for start_idx, end_idx in connections:
+        start_x, start_y, end_x, end_y = get_connection_points(start_idx, end_idx)
+        
+        # Determine curvature based on connection type
+        if abs(components[start_idx]['x'] - components[end_idx]['x']) > 0.3:
+            rad = 0  # Straight line for distant components
+        elif abs(components[start_idx]['y'] - components[end_idx]['y']) > 0.3:
+            rad = 0  # Straight line for distant components
+        else:
+            # Determine direction for curve
+            if components[start_idx]['x'] < components[end_idx]['x']:
+                rad = 0.2
+            else:
+                rad = -0.2
+        
+        ax.annotate(
+            '',
+            xy=(end_x, end_y),
+            xytext=(start_x, start_y),
+            arrowprops=dict(
+                facecolor='black',
+                width=1.0,
+                headwidth=6,
+                connectionstyle=f"arc3,rad={rad}"
+            ),
+            zorder=3
+        )
     
-    # Training to Model Registry
-    plt.annotate('', xy=(0.5, 0.33), xytext=(0.5, 0.67), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=0"))
+    # Add monitoring connections
+    monitoring_connections = [
+        (6, 1),  # Monitoring to Pipelines
+        (6, 4),  # Monitoring to Endpoints
+        (6, 5),  # Monitoring to Cloud Run
+    ]
     
-    # Model Registry to Endpoints
-    plt.annotate('', xy=(0.67, 0.5), xytext=(0.53, 0.33), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=0.1"))
-    
-    # Endpoints to Cloud Run
-    plt.annotate('', xy=(0.87, 0.5), xytext=(0.73, 0.5), 
-                arrowprops=dict(facecolor='black', width=1.5, headwidth=8, connectionstyle="arc3,rad=0"))
-    
-    # Add monitoring connections - improved visibility
-    plt.annotate('', xy=(0.5, 0.15), xytext=(0.3, 0.48), 
-                arrowprops=dict(facecolor='#F4B400', width=1.5, headwidth=6, alpha=0.8, 
-                               connectionstyle="arc3,rad=-0.2"))
-    
-    plt.annotate('', xy=(0.5, 0.15), xytext=(0.7, 0.48), 
-                arrowprops=dict(facecolor='#F4B400', width=1.5, headwidth=6, alpha=0.8,
-                               connectionstyle="arc3,rad=0.2"))
+    # Draw monitoring arrows
+    for start_idx, end_idx in monitoring_connections:
+        start_x, start_y, end_x, end_y = get_connection_points(start_idx, end_idx)
+        
+        # Custom curvature for monitoring connections
+        if components[end_idx]['x'] < components[start_idx]['x']:
+            rad = -0.3
+        else:
+            rad = 0.3
+            
+        ax.annotate(
+            '',
+            xy=(end_x, end_y),
+            xytext=(start_x, start_y),
+            arrowprops=dict(
+                facecolor='#F4B400',
+                width=1.0,
+                headwidth=5,
+                alpha=0.8,
+                connectionstyle=f"arc3,rad={rad}"
+            ),
+            zorder=2
+        )
     
     # Add title
-    plt.title('GCP MLOps Architecture for Sentiment Analysis', size=16)
+    plt.title('GCP MLOps Architecture for Sentiment Analysis', size=12)
     
-    # Remove axes
-    plt.axis('off')
+    # Set limits and turn off axes
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis('off')
     
-    # Save the figure
+    plt.tight_layout()
     plt.savefig(output_path, dpi=120, bbox_inches='tight')
     plt.close()
 
@@ -632,7 +717,7 @@ def create_all_visualizations():
     
     # 2. Create data distribution visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(7, 3.5))
         # Generate sample data
         categories = ['Positive', 'Negative', 'Neutral']
         train_counts = [1250, 950, 800]
@@ -657,16 +742,15 @@ def create_all_visualizations():
     
     # 3. Create training metrics visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
-        plt.figure(figsize=(8, 5))
+        # Create plot with two y-axes
+        fig, ax1 = plt.subplots(figsize=(7, 3.5))
+        
         # Generate sample data
         epochs = range(1, 6)
         train_acc = [0.82, 0.87, 0.90, 0.91, 0.93]
         val_acc = [0.81, 0.85, 0.88, 0.89, 0.92]
         train_loss = [0.52, 0.38, 0.29, 0.22, 0.19]
         val_loss = [0.54, 0.42, 0.33, 0.28, 0.24]
-        
-        # Create plot with two y-axes
-        fig, ax1 = plt.subplots(figsize=(8, 5))
         
         # Plot accuracy lines
         ax1.set_xlabel('Epoch')
@@ -697,12 +781,11 @@ def create_all_visualizations():
     
     # 4. Create evaluation metrics visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
-        plt.figure(figsize=(8, 6))
         # Sample confusion matrix
         cm = np.array([[425, 15, 10], [12, 335, 3], [8, 2, 290]])
         
         # Create heatmap
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(7, 3.5))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                    xticklabels=['Positive', 'Negative', 'Neutral'],
                    yticklabels=['Positive', 'Negative', 'Neutral'])
@@ -715,9 +798,13 @@ def create_all_visualizations():
     
     # 5. Create deployment architecture visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-        plt.figure(figsize=(10, 5))
+        fig, ax = plt.subplots(figsize=(7, 3.5))
         
-        # Define components
+        # Define component dimensions
+        box_width = 0.15
+        box_height = 0.3
+        
+        # Define component positions - exact positioning for better alignment
         components = [
             {'name': 'Vertex AI\nModel Registry', 'x': 0.2, 'y': 0.5, 'color': '#0F9D58'},
             {'name': 'Vertex AI\nEndpoints', 'x': 0.4, 'y': 0.5, 'color': '#0F9D58'},
@@ -725,45 +812,90 @@ def create_all_visualizations():
             {'name': 'Cloud Run\nService', 'x': 0.8, 'y': 0.5, 'color': '#4285F4'},
         ]
         
-        # Draw boxes for components
+        # Draw components as rectangles with text
         for component in components:
-            plt.annotate(component['name'], 
-                         xy=(component['x'], component['y']), 
-                         xytext=(component['x'], component['y']),
-                         ha='center',
-                         size=12,
-                         bbox=dict(boxstyle='round,pad=0.5', 
-                                   fc=component['color'], 
-                                   ec='black',
-                                   alpha=0.7,
-                                   color='white'))
+            # Create rectangle patch
+            rect = plt.Rectangle(
+                (component['x'] - box_width/2, component['y'] - box_height/2),
+                box_width, box_height,
+                facecolor=component['color'],
+                edgecolor='black',
+                alpha=0.7,
+                zorder=1
+            )
+            ax.add_patch(rect)
+            
+            # Add text
+            ax.text(
+                component['x'], component['y'],
+                component['name'],
+                ha='center',
+                va='center',
+                color='white',
+                fontsize=10,
+                zorder=2
+            )
         
-        # Add arrows
-        plt.annotate('', xy=(0.37, 0.5), xytext=(0.23, 0.5), 
-                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
-        plt.annotate('', xy=(0.57, 0.5), xytext=(0.43, 0.5), 
-                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
-        plt.annotate('', xy=(0.77, 0.5), xytext=(0.63, 0.5), 
-                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
+        # Calculate arrow endpoints precisely
+        def get_arrow_points(start_idx, end_idx):
+            start_x = components[start_idx]['x'] + box_width/2  # Right edge of starting box
+            start_y = components[start_idx]['y']
+            end_x = components[end_idx]['x'] - box_width/2  # Left edge of ending box
+            end_y = components[end_idx]['y']
+            return start_x, start_y, end_x, end_y
         
-        # Add title and users
-        plt.title('Deployment Architecture', size=16)
+        # Draw arrows with precise connection points
+        for i in range(len(components) - 1):
+            start_x, start_y, end_x, end_y = get_arrow_points(i, i+1)
+            ax.annotate(
+                '',
+                xy=(end_x, end_y),
+                xytext=(start_x, start_y),
+                arrowprops=dict(
+                    facecolor='black',
+                    width=1.5,
+                    headwidth=8,
+                    connectionstyle="arc3,rad=0"
+                ),
+                zorder=3
+            )
         
-        # Add users
-        plt.annotate('User Requests', xy=(0.9, 0.7), xytext=(0.9, 0.7),
-                    ha='center', va='center',
-                    bbox=dict(boxstyle="round", fc="0.9", ec="black"))
-        plt.annotate('', xy=(0.8, 0.58), xytext=(0.9, 0.68), 
-                    arrowprops=dict(facecolor='black', width=1.0, headwidth=6))
-                    
-        plt.axis('off')
+        # Add title
+        plt.title('Deployment Architecture', size=14)
+        
+        # Add user requests
+        ax.text(
+            0.9, 0.8,
+            'User Requests',
+            ha='center',
+            va='center',
+            bbox=dict(boxstyle="round", fc="0.9", ec="black"),
+            zorder=2
+        )
+        
+        # Draw arrow from user to Cloud Run
+        ax.annotate(
+            '',
+            xy=(0.8, 0.5 + box_height/2),  # Top edge of Cloud Run box
+            xytext=(0.9, 0.77),  # Bottom of user request text
+            arrowprops=dict(
+                facecolor='black',
+                width=1.0,
+                headwidth=6
+            ),
+            zorder=3
+        )
+        
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis('off')
         plt.tight_layout()
         plt.savefig(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), dpi=120)
         plt.close()
     
     # 6. Create positive explanation visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(7, 3.5))
         
         # Sample text and importance scores
         words = ["The", "service", "was", "excellent", "and", "staff", "very", "friendly"]
@@ -781,7 +913,7 @@ def create_all_visualizations():
     
     # 7. Create negative explanation visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(7, 3.5))
         
         # Sample text and importance scores
         words = ["The", "food", "was", "terrible", "and", "service", "very", "slow"]
@@ -799,15 +931,13 @@ def create_all_visualizations():
     
     # 8. Create bias detection visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
-        plt.figure(figsize=(8, 5))
+        # Create plot with two y-axes
+        fig, ax1 = plt.subplots(figsize=(7, 3.5))
         
         # Sample data
         categories = ['Gender', 'Age', 'Race/Ethnicity']
         equal_odds_diff = [0.031, 0.048, 0.027]
         disparate_impact = [0.97, 0.95, 0.98]
-        
-        # Create plot with two y-axes
-        fig, ax1 = plt.subplots(figsize=(8, 5))
         
         x = np.arange(len(categories))
         width = 0.35
@@ -847,47 +977,49 @@ def create_all_visualizations():
     
     # 9. Create monitoring dashboard visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
-        plt.figure(figsize=(10, 6))
-        
         # Create a 2x2 grid for sample monitoring panels
-        fig, axs = plt.subplots(2, 2, figsize=(10, 6))
+        fig, axs = plt.subplots(2, 2, figsize=(7, 4))
         
         # Panel 1: Request latency
         days = np.arange(1, 31)
         latency = 100 + 10 * np.sin(days/3) + np.random.normal(0, 5, len(days))
         axs[0, 0].plot(days, latency, 'b-')
-        axs[0, 0].set_title('Request Latency (ms)')
+        axs[0, 0].set_title('Request Latency (ms)', fontsize=10)
         axs[0, 0].set_ylim([80, 120])
         axs[0, 0].axhline(y=100, color='r', linestyle='--', alpha=0.7)
         axs[0, 0].grid(alpha=0.3)
+        axs[0, 0].tick_params(labelsize=8)
         
         # Panel 2: Error rate
         error_rate = 0.5 + 0.2 * np.cos(days/5) + np.random.normal(0, 0.1, len(days))
         error_rate = np.clip(error_rate, 0, 1) * 100  # Convert to percentage
         axs[0, 1].plot(days, error_rate, 'r-')
-        axs[0, 1].set_title('Error Rate (%)')
+        axs[0, 1].set_title('Error Rate (%)', fontsize=10)
         axs[0, 1].set_ylim([0, 1.5])
         axs[0, 1].axhline(y=1.0, color='r', linestyle='--', alpha=0.7)
         axs[0, 1].grid(alpha=0.3)
+        axs[0, 1].tick_params(labelsize=8)
         
         # Panel 3: Prediction distribution
         class_names = ['Positive', 'Negative', 'Neutral']
         distribution = [45, 35, 20]
         axs[1, 0].pie(distribution, labels=class_names, autopct='%1.1f%%', 
                      colors=['#0F9D58', '#DB4437', '#F4B400'])
-        axs[1, 0].set_title('Prediction Distribution')
+        axs[1, 0].set_title('Prediction Distribution', fontsize=10)
         
         # Panel 4: Feature drift
         drift_days = np.arange(1, 31)
         drift_score = 0.08 + 0.02 * np.cumsum(np.random.normal(0, 0.01, len(drift_days)))
         drift_score = np.clip(drift_score, 0, 0.2)
         axs[1, 1].plot(drift_days, drift_score, 'g-')
-        axs[1, 1].set_title('Feature Drift (KL Divergence)')
+        axs[1, 1].set_title('Feature Drift (KL Divergence)', fontsize=10)
         axs[1, 1].set_ylim([0, 0.2])
         axs[1, 1].axhline(y=0.15, color='r', linestyle='--', alpha=0.7)
         axs[1, 1].grid(alpha=0.3)
+        axs[1, 1].tick_params(labelsize=8)
         
         plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3, wspace=0.3)  # Add more space between subplots
         plt.savefig(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), dpi=120)
         plt.close()
 
