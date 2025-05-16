@@ -75,6 +75,18 @@ jobs:
       run: |
         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
         
+    - name: Create Cloud Run Service Account
+      run: |
+        echo "Creating service account for Cloud Run..."
+        gcloud iam service-accounts create ${{ env.SERVICE_NAME }} \
+          --display-name="Sentiment Analysis Service Account" \
+          || echo "Service account may already exist"
+        
+        # Grant necessary roles
+        gcloud projects add-iam-policy-binding ${{ secrets.GCP_PROJECT_ID }} \
+          --member="serviceAccount:${{ env.SERVICE_NAME }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+          --role="roles/run.invoker"
+        
     - name: Build and push Docker container
       run: |
         cd deployment
@@ -89,7 +101,7 @@ jobs:
           --platform managed \
           --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
-          --service-account mlops-gcp-pipeline@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          --service-account ${{ env.SERVICE_NAME }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           
     - name: Wait for deployment to stabilize
       run: |
