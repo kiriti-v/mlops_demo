@@ -11,9 +11,11 @@ import torch
 class SentimentAnalyzer:
     def __init__(self):
         """Initialize the sentiment analyzer."""
-        self.model_path = os.path.join(os.path.dirname(__file__), '../1-model/saved_model')
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
+        # Update model path to point to the deployment directory
+        self.model_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../deployment/saved_model'))
+        print(f"Loading model from: {self.model_path}")  # Debug print
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, local_files_only=True)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path, local_files_only=True)
         self.model.eval()
 
     def predict_sentiment(self, text):
