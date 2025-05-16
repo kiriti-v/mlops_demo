@@ -48,7 +48,7 @@ def main():
             create_gcp_architecture_diagram()
             
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), use_container_width=True)
             else:
                 st.warning("Architecture diagram not found. It will be generated on first run.")
             
@@ -172,26 +172,26 @@ def main():
         with col1:
             st.subheader("Data Distribution")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), use_container_width=True)
             else:
                 st.info("Data distribution visualization will be generated on first run.")
             
             st.subheader("Evaluation Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), use_container_width=True)
             else:
                 st.info("Evaluation metrics visualization will be generated on first run.")
         
         with col2:
             st.subheader("Training Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), use_container_width=True)
             else:
                 st.info("Training metrics visualization will be generated on first run.")
             
             st.subheader("Deployment Architecture")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), use_container_width=True)
             else:
                 st.info("Deployment architecture visualization will be generated on first run.")
         
@@ -250,20 +250,20 @@ def main():
         with col1:
             st.subheader("Positive Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), use_container_width=True)
             else:
                 st.info("Positive explanation visualization will be generated on first run.")
             
             st.subheader("Bias Detection Results")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), use_container_width=True)
             else:
                 st.info("Bias detection visualization will be generated on first run.")
         
         with col2:
             st.subheader("Negative Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), use_column_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), use_container_width=True)
             else:
                 st.info("Negative explanation visualization will be generated on first run.")
             
@@ -293,7 +293,7 @@ def main():
         
         st.subheader("Monitoring Dashboard")
         if os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
-            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), use_column_width=True)
+            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), use_container_width=True)
         else:
             st.info("Monitoring dashboard visualization will be generated on first run.")
         
@@ -539,7 +539,7 @@ def create_gcp_architecture_diagram():
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
     
     # Create a figure for the architecture diagram
-    plt.figure(figsize=(14, 8))
+    plt.figure(figsize=(10, 6))
     plt.tight_layout()
     
     # Set the background color
@@ -617,10 +617,287 @@ def create_gcp_architecture_diagram():
     plt.savefig(output_path, dpi=120, bbox_inches='tight')
     plt.close()
 
+def create_all_visualizations():
+    """Generate all visualizations needed for the dashboard."""
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    
+    # Create directory if it doesn't exist
+    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+    
+    # 1. Create GCP architecture diagram
+    create_gcp_architecture_diagram()
+    
+    # 2. Create data distribution visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
+        plt.figure(figsize=(8, 5))
+        # Generate sample data
+        categories = ['Positive', 'Negative', 'Neutral']
+        train_counts = [1250, 950, 800]
+        val_counts = [300, 250, 200]
+        test_counts = [450, 350, 300]
+        x = np.arange(len(categories))
+        width = 0.25
+        
+        # Create plot
+        plt.bar(x - width, train_counts, width, label='Train')
+        plt.bar(x, val_counts, width, label='Validation')
+        plt.bar(x + width, test_counts, width, label='Test')
+        plt.xlabel('Sentiment Class')
+        plt.ylabel('Number of Samples')
+        plt.title('Data Distribution by Split')
+        plt.xticks(x, categories)
+        plt.legend()
+        plt.grid(axis='y', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), dpi=120)
+        plt.close()
+    
+    # 3. Create training metrics visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
+        plt.figure(figsize=(8, 5))
+        # Generate sample data
+        epochs = range(1, 6)
+        train_acc = [0.82, 0.87, 0.90, 0.91, 0.93]
+        val_acc = [0.81, 0.85, 0.88, 0.89, 0.92]
+        train_loss = [0.52, 0.38, 0.29, 0.22, 0.19]
+        val_loss = [0.54, 0.42, 0.33, 0.28, 0.24]
+        
+        # Create plot with two y-axes
+        fig, ax1 = plt.subplots(figsize=(8, 5))
+        
+        # Plot accuracy lines
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Accuracy', color='tab:blue')
+        ax1.plot(epochs, train_acc, 'o-', color='tab:blue', label='Train Accuracy')
+        ax1.plot(epochs, val_acc, 's-', color='lightblue', label='Validation Accuracy')
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
+        ax1.set_ylim([0.8, 0.95])
+        
+        # Create second y-axis for loss
+        ax2 = ax1.twinx()
+        ax2.set_ylabel('Loss', color='tab:red')
+        ax2.plot(epochs, train_loss, 'o-', color='tab:red', label='Train Loss')
+        ax2.plot(epochs, val_loss, 's-', color='lightcoral', label='Validation Loss')
+        ax2.tick_params(axis='y', labelcolor='tab:red')
+        ax2.set_ylim([0.1, 0.6])
+        
+        # Combine legends
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc='center right')
+        
+        plt.title('Training and Validation Metrics')
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), dpi=120)
+        plt.close()
+    
+    # 4. Create evaluation metrics visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
+        plt.figure(figsize=(8, 6))
+        # Sample confusion matrix
+        cm = np.array([[425, 15, 10], [12, 335, 3], [8, 2, 290]])
+        
+        # Create heatmap
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                   xticklabels=['Positive', 'Negative', 'Neutral'],
+                   yticklabels=['Positive', 'Negative', 'Neutral'])
+        plt.xlabel('Predicted Label')
+        plt.ylabel('True Label')
+        plt.title('Confusion Matrix')
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), dpi=120)
+        plt.close()
+    
+    # 5. Create deployment architecture visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
+        plt.figure(figsize=(10, 5))
+        
+        # Define components
+        components = [
+            {'name': 'Vertex AI\nModel Registry', 'x': 0.2, 'y': 0.5, 'color': '#0F9D58'},
+            {'name': 'Vertex AI\nEndpoints', 'x': 0.4, 'y': 0.5, 'color': '#0F9D58'},
+            {'name': 'Cloud Load\nBalancer', 'x': 0.6, 'y': 0.5, 'color': '#4285F4'},
+            {'name': 'Cloud Run\nService', 'x': 0.8, 'y': 0.5, 'color': '#4285F4'},
+        ]
+        
+        # Draw boxes for components
+        for component in components:
+            plt.annotate(component['name'], 
+                         xy=(component['x'], component['y']), 
+                         xytext=(component['x'], component['y']),
+                         ha='center',
+                         size=12,
+                         bbox=dict(boxstyle='round,pad=0.5', 
+                                   fc=component['color'], 
+                                   ec='black',
+                                   alpha=0.7,
+                                   color='white'))
+        
+        # Add arrows
+        plt.annotate('', xy=(0.37, 0.5), xytext=(0.23, 0.5), 
+                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
+        plt.annotate('', xy=(0.57, 0.5), xytext=(0.43, 0.5), 
+                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
+        plt.annotate('', xy=(0.77, 0.5), xytext=(0.63, 0.5), 
+                    arrowprops=dict(facecolor='black', width=1.5, headwidth=8))
+        
+        # Add title and users
+        plt.title('Deployment Architecture', size=16)
+        
+        # Add users
+        plt.annotate('User Requests', xy=(0.9, 0.7), xytext=(0.9, 0.7),
+                    ha='center', va='center',
+                    bbox=dict(boxstyle="round", fc="0.9", ec="black"))
+        plt.annotate('', xy=(0.8, 0.58), xytext=(0.9, 0.68), 
+                    arrowprops=dict(facecolor='black', width=1.0, headwidth=6))
+                    
+        plt.axis('off')
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), dpi=120)
+        plt.close()
+    
+    # 6. Create positive explanation visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
+        plt.figure(figsize=(8, 5))
+        
+        # Sample text and importance scores
+        words = ["The", "service", "was", "excellent", "and", "staff", "very", "friendly"]
+        importance = [0.05, 0.25, 0.03, 0.40, 0.02, 0.18, 0.02, 0.30]
+        
+        # Create horizontal bar chart with green color scheme
+        plt.barh(words, importance, color=['#c9e7c8', '#8ecc8d', '#c9e7c8', '#0F9D58', '#c9e7c8', '#8ecc8d', '#c9e7c8', '#0F9D58'])
+        plt.xlabel('Importance Score')
+        plt.title('Positive Sentiment Word Importance')
+        plt.xlim(0, 0.5)
+        plt.grid(axis='x', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), dpi=120)
+        plt.close()
+    
+    # 7. Create negative explanation visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
+        plt.figure(figsize=(8, 5))
+        
+        # Sample text and importance scores
+        words = ["The", "food", "was", "terrible", "and", "service", "very", "slow"]
+        importance = [0.04, 0.20, 0.03, 0.45, 0.02, 0.15, 0.02, 0.35]
+        
+        # Create horizontal bar chart with red color scheme
+        plt.barh(words, importance, color=['#fad2cf', '#f4908e', '#fad2cf', '#DB4437', '#fad2cf', '#f4908e', '#fad2cf', '#DB4437'])
+        plt.xlabel('Importance Score')
+        plt.title('Negative Sentiment Word Importance')
+        plt.xlim(0, 0.5)
+        plt.grid(axis='x', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), dpi=120)
+        plt.close()
+    
+    # 8. Create bias detection visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
+        plt.figure(figsize=(8, 5))
+        
+        # Sample data
+        categories = ['Gender', 'Age', 'Race/Ethnicity']
+        equal_odds_diff = [0.031, 0.048, 0.027]
+        disparate_impact = [0.97, 0.95, 0.98]
+        
+        # Create plot with two y-axes
+        fig, ax1 = plt.subplots(figsize=(8, 5))
+        
+        x = np.arange(len(categories))
+        width = 0.35
+        
+        # Plot equal odds difference
+        ax1.set_xlabel('Protected Attribute')
+        ax1.set_ylabel('Equal Odds Difference', color='tab:blue')
+        ax1.bar(x - width/2, equal_odds_diff, width, color='tab:blue', label='Equal Odds Difference')
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
+        ax1.set_ylim([0, 0.06])
+        
+        # Add threshold line
+        ax1.axhline(y=0.05, color='tab:blue', linestyle='--', alpha=0.7)
+        ax1.text(2.1, 0.05, 'Threshold: 0.05', color='tab:blue', va='bottom')
+        
+        # Create second y-axis for disparate impact
+        ax2 = ax1.twinx()
+        ax2.set_ylabel('Disparate Impact Ratio', color='tab:red')
+        ax2.bar(x + width/2, disparate_impact, width, color='tab:red', label='Disparate Impact Ratio')
+        ax2.tick_params(axis='y', labelcolor='tab:red')
+        ax2.set_ylim([0.9, 1.0])
+        
+        # Add threshold line
+        ax2.axhline(y=0.95, color='tab:red', linestyle='--', alpha=0.7)
+        ax2.text(2.1, 0.945, 'Threshold: 0.95', color='tab:red', va='top')
+        
+        # Combine legends
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right')
+        
+        plt.title('Fairness Metrics by Protected Attribute')
+        plt.xticks(x, categories)
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), dpi=120)
+        plt.close()
+    
+    # 9. Create monitoring dashboard visualization
+    if not os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
+        plt.figure(figsize=(10, 6))
+        
+        # Create a 2x2 grid for sample monitoring panels
+        fig, axs = plt.subplots(2, 2, figsize=(10, 6))
+        
+        # Panel 1: Request latency
+        days = np.arange(1, 31)
+        latency = 100 + 10 * np.sin(days/3) + np.random.normal(0, 5, len(days))
+        axs[0, 0].plot(days, latency, 'b-')
+        axs[0, 0].set_title('Request Latency (ms)')
+        axs[0, 0].set_ylim([80, 120])
+        axs[0, 0].axhline(y=100, color='r', linestyle='--', alpha=0.7)
+        axs[0, 0].grid(alpha=0.3)
+        
+        # Panel 2: Error rate
+        error_rate = 0.5 + 0.2 * np.cos(days/5) + np.random.normal(0, 0.1, len(days))
+        error_rate = np.clip(error_rate, 0, 1) * 100  # Convert to percentage
+        axs[0, 1].plot(days, error_rate, 'r-')
+        axs[0, 1].set_title('Error Rate (%)')
+        axs[0, 1].set_ylim([0, 1.5])
+        axs[0, 1].axhline(y=1.0, color='r', linestyle='--', alpha=0.7)
+        axs[0, 1].grid(alpha=0.3)
+        
+        # Panel 3: Prediction distribution
+        class_names = ['Positive', 'Negative', 'Neutral']
+        distribution = [45, 35, 20]
+        axs[1, 0].pie(distribution, labels=class_names, autopct='%1.1f%%', 
+                     colors=['#0F9D58', '#DB4437', '#F4B400'])
+        axs[1, 0].set_title('Prediction Distribution')
+        
+        # Panel 4: Feature drift
+        drift_days = np.arange(1, 31)
+        drift_score = 0.08 + 0.02 * np.cumsum(np.random.normal(0, 0.01, len(drift_days)))
+        drift_score = np.clip(drift_score, 0, 0.2)
+        axs[1, 1].plot(drift_days, drift_score, 'g-')
+        axs[1, 1].set_title('Feature Drift (KL Divergence)')
+        axs[1, 1].set_ylim([0, 0.2])
+        axs[1, 1].axhline(y=0.15, color='r', linestyle='--', alpha=0.7)
+        axs[1, 1].grid(alpha=0.3)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), dpi=120)
+        plt.close()
+
 
 if __name__ == "__main__":
     # Make sure the artifacts directory exists
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+    
+    # Generate all visualizations on first run
+    create_all_visualizations()
     
     # Run the Streamlit app
     main() 
