@@ -9,6 +9,7 @@ from flask import Flask, request, jsonify
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import google.cloud.logging
 import logging
+from datetime import datetime
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -26,7 +27,10 @@ model.eval()
 @app.route('/health')
 def health():
     """Health check endpoint."""
-    return jsonify({"status": "healthy"})
+    return jsonify({
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat()
+    })
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -35,7 +39,10 @@ def predict():
         # Get input text
         data = request.get_json()
         if not data or 'text' not in data:
-            return jsonify({"error": "No text provided"}), 400
+            return jsonify({
+                "error": "No text provided",
+                "timestamp": datetime.utcnow().isoformat()
+            }), 422
         
         text = data['text']
         logging.info(f"Received prediction request for text: {text}")
@@ -56,7 +63,8 @@ def predict():
         response = {
             "sentiment": sentiment,
             "confidence": confidence,
-            "text": text
+            "text": text,
+            "timestamp": datetime.utcnow().isoformat()
         }
         
         logging.info(f"Prediction response: {response}")
@@ -64,7 +72,10 @@ def predict():
 
     except Exception as e:
         logging.error(f"Error during prediction: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8080))
