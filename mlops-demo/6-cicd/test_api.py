@@ -11,8 +11,10 @@ class TestSentimentAPI(unittest.TestCase):
     
     def setUp(self):
         """Set up the test environment."""
-        # Get API URL from environment variable or use default
-        self.api_url = os.environ.get("API_URL", "https://sentiment-analysis-api-monitored-240846069363.us-central1.run.app")
+        # Get API URL from environment variable, fail if not provided
+        self.api_url = os.environ.get("API_URL")
+        if not self.api_url:
+            raise ValueError("API_URL environment variable must be set")
         
         # Ensure URL has no trailing slash
         self.api_url = self.api_url.rstrip("/")

@@ -103,12 +103,14 @@ jobs:
     - name: Deploy to Cloud Run
       id: deploy
       run: |
-        gcloud run deploy ${{ env.SERVICE_NAME }} \
+        SERVICE_URL=$(gcloud run deploy ${{ env.SERVICE_NAME }} \
           --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.DOCKER_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
           --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
-          --service-account ${{ env.RUN_SERVICE_ACCOUNT }}
+          --service-account ${{ env.RUN_SERVICE_ACCOUNT }} \
+          --format="value(status.url)")
+        echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
           
     - name: Wait for deployment to stabilize
       run: |
@@ -117,8 +119,9 @@ jobs:
       
     - name: Run API tests
       env:
-        API_URL: ${{ steps.deploy.outputs.url }}
+        API_URL: ${{ steps.deploy.outputs.service_url }}
       run: |
+        echo "Testing API at: $API_URL"
         cd mlops-demo/6-cicd
         python test_api.py
         
@@ -126,4 +129,4 @@ jobs:
       if: success()
       run: |
         echo "Deployment successful!"
-        echo "Service URL: ${{ steps.deploy.outputs.url }}" 
+        echo "Service URL: ${{ steps.deploy.outputs.service_url }}" 
