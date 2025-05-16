@@ -10,6 +10,7 @@ env:
   SERVICE_NAME: sentiment-analysis-api
   PYTHON_VERSION: '3.10'
   DOCKER_REPO: docker-repository
+  RUN_SERVICE_ACCOUNT: sentiment-analysis-service@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
 jobs:
   test-and-deploy:
@@ -61,6 +62,24 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         install_components: 'beta'
 
+    - name: Setup Service Accounts
+      run: |
+        echo "Setting up service accounts..."
+        # Create the Cloud Run service account if it doesn't exist
+        gcloud iam service-accounts create sentiment-analysis-service \
+          --display-name="Sentiment Analysis Runtime Service Account" \
+          || echo "Service account may already exist"
+        
+        # Grant necessary roles to the Cloud Run service account
+        gcloud projects add-iam-policy-binding ${{ secrets.GCP_PROJECT_ID }} \
+          --member="serviceAccount:${{ env.RUN_SERVICE_ACCOUNT }}" \
+          --role="roles/run.invoker"
+        
+        # Grant actAs permission to the GitHub Actions service account
+        gcloud iam service-accounts add-iam-policy-binding ${{ env.RUN_SERVICE_ACCOUNT }} \
+          --member="serviceAccount:mlops-gcp-pipeline@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+          --role="roles/iam.serviceAccountUser"
+
     - name: Create Artifact Registry Repository
       run: |
         echo "Creating/verifying Artifact Registry repository..."
@@ -74,18 +93,6 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
-        
-    - name: Create Cloud Run Service Account
-      run: |
-        echo "Creating service account for Cloud Run..."
-        gcloud iam service-accounts create ${{ env.SERVICE_NAME }} \
-          --display-name="Sentiment Analysis Service Account" \
-          || echo "Service account may already exist"
-        
-        # Grant necessary roles
-        gcloud projects add-iam-policy-binding ${{ secrets.GCP_PROJECT_ID }} \
-          --member="serviceAccount:${{ env.SERVICE_NAME }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
-          --role="roles/run.invoker"
         
     - name: Build and push Docker container
       run: |
@@ -101,7 +108,7 @@ jobs:
           --platform managed \
           --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
-          --service-account ${{ env.SERVICE_NAME }}@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          --service-account ${{ env.RUN_SERVICE_ACCOUNT }}
           
     - name: Wait for deployment to stabilize
       run: |
