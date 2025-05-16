@@ -5,7 +5,28 @@ import numpy as np
 
 # Add parent directory to path to import model
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from model.model import SentimentAnalyzer
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+
+class SentimentAnalyzer:
+    def __init__(self):
+        """Initialize the sentiment analyzer."""
+        self.model_path = os.path.join(os.path.dirname(__file__), '../1-model/saved_model')
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_path)
+        self.model.eval()
+
+    def predict_sentiment(self, text):
+        """Predict sentiment for the given text."""
+        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
+            
+        predicted_class = torch.argmax(predictions).item()
+        confidence = predictions[0][predicted_class].item()
+        
+        return "positive" if predicted_class == 1 else "negative", confidence
 
 class TestSentimentModel(unittest.TestCase):
     """Tests for the Sentiment Analysis model."""
