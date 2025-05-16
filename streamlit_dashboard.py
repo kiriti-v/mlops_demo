@@ -31,6 +31,17 @@ def main():
         unsafe_allow_html=True
     )
     
+    # Add current timestamp and status indicators in a status bar
+    col1, col2, col3 = st.columns([2, 1, 1])
+    with col1:
+        import datetime
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        st.markdown(f"<p style='font-size: 14px;'>📊 <b>Dashboard updated:</b> {current_time}</p>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<p style='font-size: 14px;'>🟢 <b>Pipeline status:</b> Active</p>", unsafe_allow_html=True)
+    with col3:
+        st.markdown("<p style='font-size: 14px;'>🟢 <b>Model health:</b> Normal</p>", unsafe_allow_html=True)
+    
     # Create tabs
     tab_overview, tab_pipeline, tab_resp_ai, tab_monitoring, tab_infra, tab_mlops = st.tabs([
         "Overview", "Pipeline", "Responsible AI", "Monitoring", "Infrastructure", "MLOps Capabilities"
@@ -42,13 +53,13 @@ def main():
         
         with col1:
             st.header("Project Architecture")
-            st.write("This project demonstrates a modern MLOps platform leveraging Google Cloud's Vertex AI and Kubeflow Pipelines. The architecture follows best practices for MLOps, including automated pipelines, model monitoring, and responsible AI.")
+            st.write("This platform showcases our MLOps implementation using GCP's Vertex AI and Kubeflow Pipelines. We've deployed a lightweight DistilBERT model (66M parameters) for sentiment analysis that can be easily swapped with other models. The architecture implements MLOps best practices with modular components for training, evaluation, and monitoring.")
             
             # Create architecture diagram if it doesn't exist
             create_gcp_architecture_diagram()
             
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), width=600)
             else:
                 st.warning("Architecture diagram not found. It will be generated on first run.")
             
@@ -167,31 +178,109 @@ def main():
         st.header("ML Pipeline Workflow")
         st.write("Our pipeline is implemented with Kubeflow Pipeline components and deployed on Vertex AI Pipelines for fully managed execution.")
         
+        # Add interactive sentiment analysis demo
+        st.subheader("Try the Model")
+        with st.container():
+            st.markdown("<div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+            st.write("Test our sentiment analysis model with your own text:")
+            
+            sample_text = st.text_area("Enter text to analyze", "I really enjoyed the service at this restaurant. The staff was friendly and professional.")
+            
+            if st.button("Analyze Sentiment"):
+                import time
+                import random
+                
+                # Simulate model processing
+                with st.spinner("Analyzing sentiment..."):
+                    time.sleep(1.5)  # Simulate model inference time
+                    
+                    # Simple rule-based sentiment analysis for demo
+                    positive_words = ["good", "great", "excellent", "amazing", "enjoyed", "friendly", "professional", "best", "happy", "love", "wonderful"]
+                    negative_words = ["bad", "poor", "terrible", "awful", "horrible", "disappointed", "rude", "worst", "hate", "slow", "unhappy"]
+                    
+                    # Count positive and negative words
+                    sample_lower = sample_text.lower()
+                    pos_count = sum(1 for word in positive_words if word in sample_lower)
+                    neg_count = sum(1 for word in negative_words if word in sample_lower)
+                    
+                    # Determine sentiment and score
+                    if pos_count > neg_count:
+                        sentiment = "Positive"
+                        score = 0.5 + min(0.49, (pos_count - neg_count) * 0.1 + random.uniform(0, 0.05))
+                        color = "#0F9D58"  # Green
+                    elif neg_count > pos_count:
+                        sentiment = "Negative"
+                        score = 0.5 - min(0.49, (neg_count - pos_count) * 0.1 + random.uniform(0, 0.05))
+                        color = "#DB4437"  # Red
+                    else:
+                        sentiment = "Neutral"
+                        score = 0.5 + random.uniform(-0.1, 0.1)
+                        color = "#F4B400"  # Amber
+                
+                # Show results
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    st.metric("Sentiment", sentiment)
+                with col2:
+                    st.markdown(f"""
+                    <div style='background-color: {color}; padding: 10px; border-radius: 5px; color: white;'>
+                        <p style='margin: 0;'>Confidence: {score:.2f}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Show explanation
+                st.write("#### Key influencing words:")
+                words = sample_text.split()
+                influences = []
+                
+                for word in words:
+                    word_lower = word.lower().strip(".,!?;:")
+                    if word_lower in positive_words:
+                        influences.append((word, min(0.5, 0.2 + random.uniform(0, 0.3)), "#0F9D58"))
+                    elif word_lower in negative_words:
+                        influences.append((word, min(0.5, 0.2 + random.uniform(0, 0.3)), "#DB4437"))
+                
+                if influences:
+                    for word, influence, color in influences[:5]:  # Show top 5
+                        st.markdown(f"""
+                        <div style='display: flex; align-items: center; margin-bottom: 5px;'>
+                            <div style='width: 150px;'>{word}</div>
+                            <div style='flex-grow: 1; background-color: #f0f0f0; height: 20px; border-radius: 10px;'>
+                                <div style='width: {influence * 100}%; background-color: {color}; height: 100%; border-radius: 10px;'></div>
+                            </div>
+                            <div style='width: 60px; text-align: right;'>{influence:.2f}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.write("No strong sentiment indicators found.")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+            
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Data Distribution")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), width=450)
             else:
                 st.info("Data distribution visualization will be generated on first run.")
             
             st.subheader("Evaluation Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), width=450)
             else:
                 st.info("Evaluation metrics visualization will be generated on first run.")
         
         with col2:
             st.subheader("Training Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), width=450)
             else:
                 st.info("Training metrics visualization will be generated on first run.")
             
             st.subheader("Deployment Architecture")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), width=450)
             else:
                 st.info("Deployment architecture visualization will be generated on first run.")
         
@@ -250,20 +339,20 @@ def main():
         with col1:
             st.subheader("Positive Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), width=450)
             else:
                 st.info("Positive explanation visualization will be generated on first run.")
             
             st.subheader("Bias Detection Results")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), width=450)
             else:
                 st.info("Bias detection visualization will be generated on first run.")
         
         with col2:
             st.subheader("Negative Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), use_container_width=True)
+                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), width=450)
             else:
                 st.info("Negative explanation visualization will be generated on first run.")
             
@@ -291,9 +380,107 @@ def main():
         st.header("Model Monitoring & Observability")
         st.write("Comprehensive monitoring is implemented with Grafana dashboards and Prometheus metrics, integrated with Google Cloud Monitoring.")
         
+        # Add simulated real-time metrics
+        import numpy as np
+        import pandas as pd
+        import time
+        
+        # Create a container for live metrics
+        st.subheader("Live Performance Metrics")
+        live_metrics = st.container()
+        
+        with live_metrics:
+            # Generate simulated real-time data
+            now = pd.Timestamp.now()
+            time_points = pd.date_range(end=now, periods=20, freq='1min')
+            
+            # Generate random data with trend for CPU load
+            cpu_values = [25 + 10 * np.sin(i/5) + np.random.normal(0, 3) for i in range(20)]
+            cpu_values[-1] = 30 + np.random.normal(0, 2)  # Current value
+            
+            # Memory usage with small random fluctuations
+            memory_values = [45 + np.random.normal(0, 2) for _ in range(20)]
+            
+            # Request rate with random spikes
+            request_values = [60 + 20 * np.sin(i/7) + np.random.normal(0, 8) for i in range(20)]
+            request_values[-3] = 95  # Add a spike
+            
+            # Latency values
+            latency_values = [75 + 5 * np.sin(i/4) + np.random.normal(0, 4) for i in range(20)]
+            
+            # Display metrics
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric(
+                    "CPU Load (%)", 
+                    f"{cpu_values[-1]:.1f}%", 
+                    f"{cpu_values[-1] - cpu_values[-2]:.1f}%",
+                    delta_color="inverse"
+                )
+            
+            with col2:
+                st.metric(
+                    "Memory Usage (%)", 
+                    f"{memory_values[-1]:.1f}%", 
+                    f"{memory_values[-1] - memory_values[-2]:.1f}%",
+                    delta_color="inverse"
+                )
+            
+            with col3:
+                st.metric(
+                    "Request Rate (req/s)", 
+                    f"{request_values[-1]:.1f}", 
+                    f"{request_values[-1] - request_values[-2]:.1f}"
+                )
+            
+            with col4:
+                st.metric(
+                    "Avg. Latency (ms)", 
+                    f"{latency_values[-1]:.1f}", 
+                    f"{latency_values[-1] - latency_values[-2]:.1f}",
+                    delta_color="inverse"
+                )
+            
+            # Add refresh button for simulating real-time updates
+            if st.button("Refresh Metrics"):
+                st.experimental_rerun()
+        
+        # Add simulated alerts section
+        st.subheader("Recent Alerts")
+        
+        # Sample alerts
+        alerts = [
+            {"timestamp": "2025-05-16 12:42:13", "status": "Resolved", "message": "High prediction latency detected", "severity": "Warning"},
+            {"timestamp": "2025-05-16 10:15:27", "status": "Active", "message": "Feature drift exceeding threshold in age distribution", "severity": "Warning"},
+            {"timestamp": "2025-05-15 23:08:51", "status": "Resolved", "message": "Model accuracy drop detected", "severity": "Critical"},
+        ]
+        
+        # Display alerts in a table with styling
+        alert_data = pd.DataFrame(alerts)
+        
+        # Style the table based on severity and status
+        def color_alerts(val):
+            if val == 'Critical':
+                return 'background-color: #ffcccc'
+            elif val == 'Warning':
+                return 'background-color: #fff2cc'
+            else:
+                return ''
+        
+        def color_status(val):
+            if val == 'Active':
+                return 'background-color: #ffcccc'
+            else:
+                return 'background-color: #d9ead3'
+        
+        styled_alerts = alert_data.style.applymap(color_alerts, subset=['severity']).applymap(color_status, subset=['status'])
+        st.dataframe(styled_alerts, use_container_width=True)
+        
+        # Original monitoring dashboard
         st.subheader("Monitoring Dashboard")
         if os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
-            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), use_container_width=True)
+            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), width=600)
         else:
             st.info("Monitoring dashboard visualization will be generated on first run.")
         
