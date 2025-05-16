@@ -5,9 +5,17 @@ on:
     branches: [ main ]
   workflow_dispatch:  # Allow manual triggering
 
+env:
+  GCP_REGION: us-central1
+  SERVICE_NAME: sentiment-analysis-api
+  PYTHON_VERSION: '3.10'
+
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     
     steps:
     - uses: actions/checkout@v3
@@ -15,7 +23,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: ${{ env.PYTHON_VERSION }}
         
     - name: Install dependencies
       run: |
@@ -23,6 +31,11 @@ jobs:
         pip install -r mlops-demo/1-model/requirements.txt
         pip install -r mlops-demo/2-cloud-run-deployment/requirements.txt
         pip install -r mlops-demo/6-cicd/requirements.txt
+        
+    - name: Download model
+      run: |
+        cd mlops-demo/1-model
+        python download_model.py
         
     - name: Run model tests
       run: |
@@ -36,22 +49,30 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
         
+    - name: Configure Docker for GCP
+      run: |
+        gcloud auth configure-docker gcr.io --quiet
+        
     - name: Build Docker container
       run: |
         cd mlops-demo/2-cloud-run-deployment
-        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/sentiment-analysis-api:${{ github.sha }}
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         
     - name: Deploy to Cloud Run
       id: deploy
       run: |
-        gcloud run deploy sentiment-analysis-api \
-          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sentiment-analysis-api:${{ github.sha }} \
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
-          --region us-central1 \
-          --allow-unauthenticated
+          --region ${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --service-account mlops-gcp-pipeline@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           
     - name: Wait for deployment to stabilize
-      run: sleep 60
+      run: |
+        echo "Waiting for deployment to stabilize..."
+        sleep 60
       
     - name: Run API tests
       env:
@@ -62,4 +83,6 @@ jobs:
         
     - name: Notify on success
       if: success()
-      run: echo "Deployment successful!" 
+      run: |
+        echo "Deployment successful!"
+        echo "Service URL: ${{ steps.deploy.outputs.url }}" 
