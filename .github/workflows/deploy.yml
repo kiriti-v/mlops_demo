@@ -41,19 +41,25 @@ jobs:
       run: |
         cd mlops-demo/6-cicd
         python test_model.py
+
+    # Authenticate to Google Cloud
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
         
-    - name: Set up Google Cloud SDK
+    - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+        install_components: 'beta,gke-gcloud-auth-plugin'
         
     - name: Configure Docker for GCP
       run: |
         gcloud auth configure-docker gcr.io --quiet
         
-    - name: Build Docker container
+    - name: Build and push Docker container
       run: |
         cd mlops-demo/2-cloud-run-deployment
         docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
