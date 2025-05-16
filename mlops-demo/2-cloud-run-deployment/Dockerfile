@@ -4,6 +4,10 @@ FROM python:3.10-slim
 # Set working directory
 WORKDIR /app
 
+# Add build information
+LABEL maintainer="MLOps Demo Team"
+LABEL version="1.0"
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -16,7 +20,9 @@ COPY download_model.py model/
 COPY app.py .
 
 # Download the model
-RUN cd model && python download_model.py
+RUN echo "Starting model download..." && \
+    cd model && python download_model.py && \
+    echo "Model download complete!"
 
 # Set environment variables
 ENV PORT=8080
