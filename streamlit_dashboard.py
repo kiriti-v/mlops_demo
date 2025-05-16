@@ -501,7 +501,7 @@ def main():
             
             # Add refresh button for simulating real-time updates
             if st.button("Refresh Metrics"):
-                st.experimental_rerun()
+                st.rerun()
         
         # Add simulated alerts section
         st.subheader("Recent Alerts")
