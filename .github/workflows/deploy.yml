@@ -9,6 +9,7 @@ env:
   GCP_REGION: us-central1
   SERVICE_NAME: sentiment-analysis-api
   PYTHON_VERSION: '3.10'
+  DOCKER_REPO: docker-repository
 
 jobs:
   test-and-deploy:
@@ -28,15 +29,20 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r mlops-demo/1-model/requirements.txt
         pip install -r mlops-demo/2-cloud-run-deployment/requirements.txt
-        pip install -r mlops-demo/6-cicd/requirements.txt
+        pip install pytest requests
         
-    - name: Download model
+    - name: Prepare deployment files
       run: |
-        cd mlops-demo/1-model
+        # Create deployment directory
+        mkdir -p deployment
+        # Copy necessary files
+        cp mlops-demo/2-cloud-run-deployment/* deployment/
+        cp mlops-demo/1-model/download_model.py deployment/
+        cd deployment
+        # Download model
         python download_model.py
-        
+
     - name: Run model tests
       run: |
         cd mlops-demo/6-cicd
@@ -53,23 +59,33 @@ jobs:
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        install_components: 'beta,gke-gcloud-auth-plugin'
-        
-    - name: Configure Docker for GCP
+        install_components: 'beta'
+
+    - name: Create Artifact Registry Repository
       run: |
-        gcloud auth configure-docker gcr.io --quiet
+        echo "Creating/verifying Artifact Registry repository..."
+        gcloud artifacts repositories describe ${{ env.DOCKER_REPO }} \
+          --location=${{ env.GCP_REGION }} \
+          || gcloud artifacts repositories create ${{ env.DOCKER_REPO }} \
+          --repository-format=docker \
+          --location=${{ env.GCP_REGION }} \
+          --description="Docker repository for MLOps demo"
+        
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
         
     - name: Build and push Docker container
       run: |
-        cd mlops-demo/2-cloud-run-deployment
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        cd deployment
+        docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.DOCKER_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+        docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.DOCKER_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
         
     - name: Deploy to Cloud Run
       id: deploy
       run: |
         gcloud run deploy ${{ env.SERVICE_NAME }} \
-          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.DOCKER_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
           --region ${{ env.GCP_REGION }} \
           --allow-unauthenticated \
