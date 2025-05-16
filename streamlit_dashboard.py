@@ -53,13 +53,13 @@ def main():
         
         with col1:
             st.header("Project Architecture")
-            st.write("This platform showcases our MLOps implementation using GCP's Vertex AI and Kubeflow Pipelines. We've deployed a lightweight DistilBERT model (66M parameters) for sentiment analysis that can be easily swapped with other models. The architecture implements MLOps best practices with modular components for training, evaluation, and monitoring.")
+            st.write("This platform showcases my MLOps implementation using GCP's Vertex AI and Kubeflow Pipelines. I've deployed a lightweight DistilBERT model (66M parameters) for sentiment analysis that can be easily swapped with other models. The architecture implements MLOps best practices with modular components for training, evaluation, and monitoring.")
             
             # Create architecture diagram if it doesn't exist
             create_gcp_architecture_diagram()
             
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), width=600)
+                st.image(os.path.join(ARTIFACTS_DIR, "gcp_architecture.png"), width=640)
             else:
                 st.warning("Architecture diagram not found. It will be generated on first run.")
             
@@ -176,13 +176,13 @@ def main():
     # Pipeline tab
     with tab_pipeline:
         st.header("ML Pipeline Workflow")
-        st.write("Our pipeline is implemented with Kubeflow Pipeline components and deployed on Vertex AI Pipelines for fully managed execution.")
+        st.write("My pipeline is implemented with Kubeflow Pipeline components and deployed on Vertex AI Pipelines for fully managed execution.")
         
         # Add interactive sentiment analysis demo
         st.subheader("Try the Model")
         with st.container():
             st.markdown("<div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>", unsafe_allow_html=True)
-            st.write("Test our sentiment analysis model with your own text:")
+            st.write("Test the DistilBERT sentiment model with your own text, it's live, and the pipeline keeps track of the results:")
             
             sample_text = st.text_area("Enter text to analyze", "I really enjoyed the service at this restaurant. The staff was friendly and professional.")
             
@@ -261,26 +261,26 @@ def main():
         with col1:
             st.subheader("Data Distribution")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "data_distribution.png"), width=480)
             else:
                 st.info("Data distribution visualization will be generated on first run.")
             
             st.subheader("Evaluation Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "evaluation_metrics.png"), width=480)
             else:
                 st.info("Evaluation metrics visualization will be generated on first run.")
         
         with col2:
             st.subheader("Training Metrics")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "training_metrics.png"), width=480)
             else:
                 st.info("Training metrics visualization will be generated on first run.")
             
             st.subheader("Deployment Architecture")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png"), width=480)
             else:
                 st.info("Deployment architecture visualization will be generated on first run.")
         
@@ -332,27 +332,27 @@ def main():
     # Responsible AI tab
     with tab_resp_ai:
         st.header("Responsible AI Implementation")
-        st.write("Our model includes comprehensive responsible AI practices, including explainability, bias detection, and drift monitoring.")
+        st.write("The model includes comprehensive responsible AI practices, including explainability, bias detection, and drift monitoring.")
         
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Positive Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "positive_explanation.png"), width=480)
             else:
                 st.info("Positive explanation visualization will be generated on first run.")
             
             st.subheader("Bias Detection Results")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "bias_detection.png"), width=480)
             else:
                 st.info("Bias detection visualization will be generated on first run.")
         
         with col2:
             st.subheader("Negative Sentiment Explanation")
             if os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), width=450)
+                st.image(os.path.join(ARTIFACTS_DIR, "negative_explanation.png"), width=480)
             else:
                 st.info("Negative explanation visualization will be generated on first run.")
             
@@ -480,7 +480,7 @@ def main():
         # Original monitoring dashboard
         st.subheader("Monitoring Dashboard")
         if os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
-            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), width=600)
+            st.image(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png"), width=640)
         else:
             st.info("Monitoring dashboard visualization will be generated on first run.")
         
@@ -726,7 +726,7 @@ def create_gcp_architecture_diagram():
     os.makedirs(ARTIFACTS_DIR, exist_ok=True)
     
     # Create a figure for the architecture diagram
-    fig, ax = plt.subplots(figsize=(7, 4))
+    fig, ax = plt.subplots(figsize=(7.5, 4.3))
     
     # Set the background color
     ax.set_facecolor('#f8f9fa')
@@ -904,7 +904,7 @@ def create_all_visualizations():
     
     # 2. Create data distribution visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "data_distribution.png")):
-        plt.figure(figsize=(7, 3.5))
+        plt.figure(figsize=(7.5, 3.75))
         # Generate sample data
         categories = ['Positive', 'Negative', 'Neutral']
         train_counts = [1250, 950, 800]
@@ -930,7 +930,7 @@ def create_all_visualizations():
     # 3. Create training metrics visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "training_metrics.png")):
         # Create plot with two y-axes
-        fig, ax1 = plt.subplots(figsize=(7, 3.5))
+        fig, ax1 = plt.subplots(figsize=(7.5, 3.75))
         
         # Generate sample data
         epochs = range(1, 6)
@@ -972,7 +972,7 @@ def create_all_visualizations():
         cm = np.array([[425, 15, 10], [12, 335, 3], [8, 2, 290]])
         
         # Create heatmap
-        plt.figure(figsize=(7, 3.5))
+        plt.figure(figsize=(7.5, 3.75))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                    xticklabels=['Positive', 'Negative', 'Neutral'],
                    yticklabels=['Positive', 'Negative', 'Neutral'])
@@ -985,7 +985,7 @@ def create_all_visualizations():
     
     # 5. Create deployment architecture visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "deployment_architecture.png")):
-        fig, ax = plt.subplots(figsize=(7, 3.5))
+        fig, ax = plt.subplots(figsize=(7.5, 3.75))
         
         # Define component dimensions
         box_width = 0.15
@@ -1082,7 +1082,7 @@ def create_all_visualizations():
     
     # 6. Create positive explanation visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "positive_explanation.png")):
-        plt.figure(figsize=(7, 3.5))
+        plt.figure(figsize=(7.5, 3.75))
         
         # Sample text and importance scores
         words = ["The", "service", "was", "excellent", "and", "staff", "very", "friendly"]
@@ -1100,7 +1100,7 @@ def create_all_visualizations():
     
     # 7. Create negative explanation visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "negative_explanation.png")):
-        plt.figure(figsize=(7, 3.5))
+        plt.figure(figsize=(7.5, 3.75))
         
         # Sample text and importance scores
         words = ["The", "food", "was", "terrible", "and", "service", "very", "slow"]
@@ -1119,7 +1119,7 @@ def create_all_visualizations():
     # 8. Create bias detection visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "bias_detection.png")):
         # Create plot with two y-axes
-        fig, ax1 = plt.subplots(figsize=(7, 3.5))
+        fig, ax1 = plt.subplots(figsize=(7.5, 3.75))
         
         # Sample data
         categories = ['Gender', 'Age', 'Race/Ethnicity']
@@ -1165,7 +1165,7 @@ def create_all_visualizations():
     # 9. Create monitoring dashboard visualization
     if not os.path.exists(os.path.join(ARTIFACTS_DIR, "monitoring_dashboard.png")):
         # Create a 2x2 grid for sample monitoring panels
-        fig, axs = plt.subplots(2, 2, figsize=(7, 4))
+        fig, axs = plt.subplots(2, 2, figsize=(7.5, 4.3))
         
         # Panel 1: Request latency
         days = np.arange(1, 31)
