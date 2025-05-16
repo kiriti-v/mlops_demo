@@ -36,9 +36,9 @@ jobs:
       run: |
         # Create deployment directory
         mkdir -p deployment
-        # Copy necessary files
-        cp mlops-demo/2-cloud-run-deployment/* deployment/
-        cp mlops-demo/1-model/download_model.py deployment/
+        # Copy necessary files recursively
+        cp -r mlops-demo/2-cloud-run-deployment/* deployment/
+        cp -r mlops-demo/1-model/download_model.py deployment/
         cd deployment
         # Download model
         python download_model.py
