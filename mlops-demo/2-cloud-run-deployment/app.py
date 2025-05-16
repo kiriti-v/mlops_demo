@@ -1,3 +1,8 @@
+# Sentiment Analysis API Service
+# Version: 1.0.0
+# Last updated: 2024-03-21
+# This service provides sentiment analysis using DistilBERT
+
 import os
 import torch
 from flask import Flask, request, jsonify
